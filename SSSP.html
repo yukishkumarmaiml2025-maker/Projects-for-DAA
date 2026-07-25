@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dijkstra's Algorithm Visualizer</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,Arial,sans-serif;
+}
+
+body{
+
+    background:#eef2f7;
+
+}
+
+.container{
+
+    width:90%;
+    max-width:950px;
+
+    margin:40px auto;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 15px rgba(0,0,0,.2);
+
+}
+
+h1{
+
+    text-align:center;
+
+    color:#2563eb;
+
+    margin-bottom:25px;
+
+}
+
+label{
+
+    display:block;
+
+    margin-top:18px;
+
+    font-weight:bold;
+
+}
+
+input,textarea{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:8px;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    font-size:16px;
+
+}
+
+textarea{
+
+    resize:none;
+
+}
+
+.buttons{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-top:25px;
+
+}
+
+button{
+
+    flex:1;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:6px;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+#runBtn{
+
+    background:#2563eb;
+
+}
+
+#clearBtn{
+
+    background:#dc2626;
+
+}
+
+button:hover{
+
+    opacity:.9;
+
+}
+
+table{
+
+    width:100%;
+
+    margin-top:30px;
+
+    border-collapse:collapse;
+
+}
+
+th{
+
+    background:#2563eb;
+
+    color:white;
+
+    padding:12px;
+
+}
+
+td{
+
+    border:1px solid #ddd;
+
+    padding:10px;
+
+    text-align:center;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Dijkstra's Algorithm Visualizer</h1>
+
+<label>Number of Vertices</label>
+
+<input
+type="number"
+id="vertices"
+value="6">
+
+<label>Source Vertex</label>
+
+<input
+type="number"
+id="source"
+value="0">
+
+<label>Enter Edges (One Per Line)</label>
+
+<textarea
+id="edges"
+rows="10">
+0 1 4
+0 2 1
+1 3 1
+2 1 2
+2 3 5
+3 4 3
+4 5 2
+</textarea>
+
+<div class="buttons">
+
+<button
+id="runBtn"
+onclick="runAlgorithm()">
+
+Run Dijkstra
+
+</button>
+
+<button
+id="clearBtn"
+onclick="clearData()">
+
+Clear
+
+</button>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Vertex</th>
+
+<th>Shortest Distance</th>
+
+<th>Shortest Path</th>
+
+</tr>
+
+</thead>
+
+<tbody id="resultBody">
+
+<tr>
+
+<td colspan="3">
+
+Click "Run Dijkstra" to view the result.
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+    // ======================================
+// Parse Graph Input
+// ======================================
+
+function parseGraph() {
+
+    const n = parseInt(document.getElementById("vertices").value);
+
+    const graph = {};
+
+    for(let i = 0; i < n; i++){
+        graph[i] = [];
+    }
+
+    const lines = document.getElementById("edges").value
+        .trim()
+        .split("\n");
+
+    for(const line of lines){
+
+        if(line.trim() === "") continue;
+
+        const [u, v, w] = line.trim().split(/\s+/).map(Number);
+
+        graph[u].push({
+            to: v,
+            weight: w
+        });
+
+    }
+
+    return graph;
+
+}
+
+
+
+// ======================================
+// Dijkstra Algorithm
+// ======================================
+
+function dijkstra(graph, source){
+
+    const n = Object.keys(graph).length;
+
+    const dist = new Array(n).fill(Infinity);
+
+    const prev = new Array(n).fill(null);
+
+    const visited = new Array(n).fill(false);
+
+    dist[source] = 0;
+
+    for(let count = 0; count < n; count++){
+
+        let u = -1;
+
+        let min = Infinity;
+
+        for(let i = 0; i < n; i++){
+
+            if(!visited[i] && dist[i] < min){
+
+                min = dist[i];
+
+                u = i;
+
+            }
+
+        }
+
+        if(u === -1){
+
+            break;
+
+        }
+
+        visited[u] = true;
+
+        for(const edge of graph[u]){
+
+            const v = edge.to;
+
+            const w = edge.weight;
+
+            if(dist[u] + w < dist[v]){
+
+                dist[v] = dist[u] + w;
+
+                prev[v] = u;
+
+            }
+
+        }
+
+    }
+
+    return {
+
+        dist,
+
+        prev
+
+    };
+
+}
+
+
+
+// ======================================
+// Reconstruct Path
+// ======================================
+
+function reconstructPath(prev, source, target){
+
+    const path = [];
+
+    let current = target;
+
+    while(current !== null){
+
+        path.push(current);
+
+        current = prev[current];
+
+    }
+
+    path.reverse();
+
+    if(path.length === 0 || path[0] !== source){
+
+        return [];
+
+    }
+
+    return path;
+
+}
+// ======================================
+// Run Dijkstra
+// ======================================
+
+function runAlgorithm(){
+
+    const graph = parseGraph();
+
+    const source = parseInt(document.getElementById("source").value);
+
+    const result = dijkstra(graph, source);
+
+    const tbody = document.getElementById("resultBody");
+
+    tbody.innerHTML = "";
+
+    for(let i = 0; i < result.dist.length; i++){
+
+        const row = document.createElement("tr");
+
+        const vertex = document.createElement("td");
+        vertex.textContent = i;
+
+        const distance = document.createElement("td");
+
+        if(result.dist[i] === Infinity){
+            distance.textContent = "INF";
+        }
+        else{
+            distance.textContent = result.dist[i];
+        }
+
+        const path = reconstructPath(result.prev, source, i);
+
+        const pathCell = document.createElement("td");
+
+        if(path.length === 0){
+            pathCell.textContent = "No Path";
+        }
+        else{
+            pathCell.textContent = path.join(" → ");
+        }
+
+        row.appendChild(vertex);
+        row.appendChild(distance);
+        row.appendChild(pathCell);
+
+        tbody.appendChild(row);
+
+    }
+
+}
+
+
+
+// ======================================
+// Clear All
+// ======================================
+
+function clearData(){
+
+    document.getElementById("vertices").value = "";
+
+    document.getElementById("source").value = "";
+
+    document.getElementById("edges").value = "";
+
+    document.getElementById("resultBody").innerHTML =
+
+    `<tr>
+        <td colspan="3">
+            Click "Run Dijkstra" to view the result.
+        </td>
+    </tr>`;
+
+}
+
+</script>
+
+</body>
+</html>
