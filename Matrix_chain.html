@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Chain Multiplication</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    padding:20px;
+}
+input{
+    width:400px;
+    padding:8px;
+    font-size:16px;
+}
+button{
+    padding:10px 20px;
+    font-size:16px;
+    margin-top:15px;
+    cursor:pointer;
+}
+table{
+    border-collapse:collapse;
+    margin-top:20px;
+    background:white;
+}
+th,td{
+    border:1px solid black;
+    padding:8px;
+    text-align:center;
+}
+pre{
+    background:white;
+    padding:15px;
+    border:1px solid #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Matrix Chain Multiplication (Dynamic Programming)</h2>
+
+<p><b>Enter Dimensions (space separated):</b></p>
+
+<input type="text" id="dimsInput"
+placeholder="Example: 10 30 5 60 10">
+
+<br>
+
+<button onclick="runProgram()">Calculate</button>
+
+<div id="result"></div>
+
+<script>
+
+function matrixChainOrder(dims){
+
+    let n = dims.length - 1;
+
+    let m = Array.from({length:n+1},()=>Array(n+1).fill(0));
+    let s = Array.from({length:n+1},()=>Array(n+1).fill(0));
+
+    for(let l=2;l<=n;l++){
+
+        for(let i=1;i<=n-l+1;i++){
+
+            let j=i+l-1;
+            m[i][j]=Number.MAX_SAFE_INTEGER;
+
+            for(let k=i;k<j;k++){
+
+                let cost=m[i][k]+m[k+1][j]+dims[i-1]*dims[k]*dims[j];
+
+                if(cost<m[i][j]){
+                    m[i][j]=cost;
+                    s[i][j]=k;
+                }
+            }
+        }
+    }
+
+    return {m,s,n};
+
+}
+
+function printOptimalParens(s,i,j){
+
+    if(i===j)
+        return "A"+i;
+
+    let k=s[i][j];
+
+    return "("
+            +printOptimalParens(s,i,k)
+            +" × "
+            +printOptimalParens(s,k+1,j)
+            +")";
+}
+
+function runProgram(){
+
+    let input=document.getElementById("dimsInput").value.trim();
+
+    if(input===""){
+        alert("Please enter dimensions.");
+        return;
+    }
+
+    let dims=input.split(/\s+/).map(Number);
+
+    if(dims.some(isNaN)){
+        alert("Enter only integers.");
+        return;
+    }
+
+    if(dims.length<2){
+        alert("Enter at least two dimensions.");
+        return;
+    }
+
+    let {m,s,n}=matrixChainOrder(dims);
+
+    let html="";
+
+    html+="<h3>Matrix Dimensions</h3><pre>";
+
+    for(let i=0;i<n;i++){
+        html+="A"+(i+1)+": "
+        +dims[i]+" × "+dims[i+1]+"\n";
+    }
+
+    html+="</pre>";
+
+    html+="<h3>Minimum Scalar Multiplications</h3>";
+    html+="<p><b>"+m[1][n]+"</b></p>";
+
+    html+="<h3>Optimal Parenthesization</h3>";
+    html+="<p><b>"+printOptimalParens(s,1,n)+"</b></p>";
+
+    html+="<h3>DP Cost Table</h3>";
+
+    html+="<table>";
+
+    html+="<tr><th></th>";
+
+    for(let j=1;j<=n;j++)
+        html+="<th>A"+j+"</th>";
+
+    html+="</tr>";
+
+    for(let i=1;i<=n;i++){
+
+        html+="<tr>";
+
+        html+="<th>A"+i+"</th>";
+
+        for(let j=1;j<=n;j++){
+
+            if(j<i)
+                html+="<td>---</td>";
+            else
+                html+="<td>"+m[i][j]+"</td>";
+        }
+
+        html+="</tr>";
+    }
+
+    html+="</table>";
+
+    document.getElementById("result").innerHTML=html;
+
+}
+
+</script>
+
+</body>
+</html>
