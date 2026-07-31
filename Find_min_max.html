@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min-Max using Divide and Conquer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        pre {
+            background: #222;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Min-Max using Divide and Conquer</h1>
+
+<label><b>Enter Array Elements (space separated):</b></label><br><br>
+
+<input
+    type="text"
+    id="arrayInput"
+    placeholder="Example: 3 1 7 4 9 2 8 5 6 0"
+    style="width:400px;padding:8px;"
+>
+
+<br><br>
+
+<button onclick="runProgram()">Find Min & Max</button>
+
+<pre id="output"></pre>
+
+<script>
+
+let comparisonCount = 0;
+
+// Divide and Conquer
+function minMaxDC(arr, low, high){
+
+    if(low === high){
+        return [arr[low], arr[low]];
+    }
+
+    if(high === low + 1){
+        comparisonCount++;
+        if(arr[low] < arr[high]){
+            return [arr[low], arr[high]];
+        }
+        return [arr[high], arr[low]];
+    }
+
+    let mid = Math.floor((low + high) / 2);
+
+    let left = minMaxDC(arr, low, mid);
+    let right = minMaxDC(arr, mid + 1, high);
+
+    comparisonCount++;
+    let overallMin = left[0] < right[0] ? left[0] : right[0];
+
+    comparisonCount++;
+    let overallMax = left[1] > right[1] ? left[1] : right[1];
+
+    return [overallMin, overallMax];
+}
+
+// Naive Method
+function minMaxNaive(arr){
+
+    let mn = arr[0];
+    let mx = arr[0];
+    let comps = 0;
+
+    for(let i = 1; i < arr.length; i++){
+
+        comps++;
+        if(arr[i] < mn)
+            mn = arr[i];
+
+        comps++;
+        if(arr[i] > mx)
+            mx = arr[i];
+    }
+
+    return [mn, mx, comps];
+}
+
+function runProgram(){
+
+    let input = document.getElementById("arrayInput").value.trim();
+
+    if(input === ""){
+        alert("Please enter array elements.");
+        return;
+    }
+
+    let arr = input.split(/\s+/).map(Number);
+
+    if(arr.some(isNaN)){
+        alert("Please enter only numbers.");
+        return;
+    }
+
+    comparisonCount = 0;
+
+    let result = minMaxDC(arr,0,arr.length-1);
+    let dcComparisons = comparisonCount;
+
+    let naive = minMaxNaive(arr);
+
+    let output = "";
+
+    output += "Input Array : " + arr.join(", ") + "\n";
+    output += "Minimum     : " + result[0] + "\n";
+    output += "Maximum     : " + result[1] + "\n\n";
+
+    output += "Divide & Conquer Comparisons : " + dcComparisons + "\n";
+    output += "Naive Comparisons            : " + naive[2] + "\n";
+
+    document.getElementById("output").textContent = output;
+}
+
+</script>
+
+</body>
+</html>
